@@ -1,0 +1,57 @@
+#!/usr/bin/env bashionista
+
+BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+
+function _publish_synopsis () {
+  echo -n '[<branch>]'
+}
+
+_publish_description () {
+  echo 'Publish specific branch to the NPM repository.'
+}
+
+function git-npm_publish () {
+  local path="$PWD"
+  local tmp
+
+  tmp="$(mktemp -d)"
+
+  {
+    cd "$tmp"
+    git init
+    git remote add origin "$path/.git"
+    git fetch origin
+    git checkout "${1:-$BRANCH}"
+    npm i
+    npm t
+    npm publish
+  } || {
+    rm -rf "$tmp"
+    exit 1
+  }
+}
+
+function _tags_synopsis () {
+  echo -n '[<branch>]'
+}
+
+_tags_description () {
+  echo 'Create remote tags for (current) branch.'
+}
+
+function git-npm_tags () {
+  git tag --list 'v*' | xargs -r git tag -d
+
+  local version
+
+  git rev-list --reverse "${1:-$BRANCH}" | while read -r commit; do
+    {
+      git show "$commit:package.json" | jq -e .version &> /dev/null || continue
+      version="$(git show "$commit:package.json" | jq -er .version)"
+      echo -n "version $version: commit: $commit: "
+      git tag "v$version" "$commit" || continue
+      echo "created: tag '$version' (was ${commit:0:6})"
+    } 1>&2 || continue
+    echo "v$version"
+  done | xargs -r git push origin -f
+}
