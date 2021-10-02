@@ -18,13 +18,18 @@ Synopsis:
 
 Subcommands:
   completion 
+  
   help 
+  
   publish [<branch>]
     Publish specific branch to the NPM repository.
+  
   run <command> [...args]
     Run a command in a clean version of the current branch.
+  
   tags [<branch>]
     Create remote tags for (current) branch.
+  
 ```
 
 ## Build

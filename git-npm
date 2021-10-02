@@ -91,6 +91,7 @@ function log ()
             { 
                 "_${name:-}_description" 2> /dev/null || true
             } | sed 's/^/  /g';
+            printf '\n';
         done | sed 's/^/  /g'
     };
     function git-npm_completion () 
